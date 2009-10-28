@@ -1,4 +1,4 @@
-/* cbase.c - v0.1
+/* cbase.c - v0.1.5
  * - change base of numbers
 
  * Copyright (C) 2009 -  Aitjcize <aitjcize@gmail.com>
@@ -23,14 +23,14 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define A_MAX 4096
+#define ARGV_MAX 4096
+#define MAX_TERMS 4096
 #define ARGS_MAX 64
 #define BASE_MAX 256
 #define BASE_STRLEN_MAX 10
-#define TR_MAX 10
 
 #define PROGRAM_NAME "cbase"
-#define VERSION "0.1.2"
+#define VERSION "0.1.5"
 
 /* some global flags */
 bool outter_string_cut = false;
@@ -46,10 +46,14 @@ bool to_alpha = false;
 
 /* global variables */
 
+int g_total = 0;
+char* terms[MAX_TERMS];
+
 /* function definition */
-char* trans(char* target, char* buf, int base_from, int base_to, char fd, int ign, char* uifd);
-char* itoa(int num);
+int trans(char* target, int base_from, int base_to, char fd, int ign, char uifd);
+void freeterms(void);
 void usage(void);
+char* i2a(int num);
 
 int main(int argc, char  *argv[])
 {
@@ -57,18 +61,13 @@ int main(int argc, char  *argv[])
   char *optargs[ARGS_MAX];
   int argcount = 0;                             /* argumant to process count */
   char c_base_from[BASE_STRLEN_MAX], c_base_to[BASE_STRLEN_MAX];
-  char output[A_MAX *8];
-  char alpha[A_MAX *3];                         /* for alphabet */
+  char alpha[ARGV_MAX *3];                         /* for alphabet */
   char *send;
-  char uifd[2], uofd[2];
   char sc;
   char ifd = '.', ofd = '.';
+  char uifd = '.', uofd = '.';
   int ign = 0, ogn = 0;
-  char buf[A_MAX];
-  int i, j;
-
-  strcpy(uofd, "."); /* initialize field */
-  strcpy(uifd, ".");
+  int i, j, max_length = 0;
 
   for(i = 1; i < argc; i++) {
     if(argv[i][0] == '-') {
@@ -79,7 +78,7 @@ int main(int argc, char  *argv[])
               fprintf(stderr ,"cbase: no input base specified.\n");
               exit(1);
             }
-            if(strlen(argv[i +1]) > A_MAX) {
+            if(strlen(argv[i +1]) > BASE_STRLEN_MAX) {
               fprintf(stderr ,"cbase: invalid base.\n");
               exit(1);
             }
@@ -96,7 +95,7 @@ int main(int argc, char  *argv[])
               fprintf(stderr ,"cbase: no output base specified.\n");
               exit(1);
             }
-            if(strlen(argv[i +1]) > A_MAX) {
+            if(strlen(argv[i +1]) > BASE_STRLEN_MAX) {
               fprintf(stderr ,"cbase: invalid base.\n");
               exit(1);
             }
@@ -137,7 +136,7 @@ int main(int argc, char  *argv[])
 
           case 'g':
             if(i == argc -1) {
-              fprintf(stderr ,"cbase: option without value --`%c'.\n", argv[i][j]);
+              fprintf(stderr ,"cbase: option without value - `%c'.\n", argv[i][j]);
               exit(1);
             }
             sc = argv[i][j +1];
@@ -185,8 +184,12 @@ int main(int argc, char  *argv[])
               }
               sc == 'i'? (inner_use_field = true): (outter_use_field = true);
               if(i < argc -1)
-                if(strlen(argv[i +1]) == 1)
-                  strncpy(sc == 'i'? uifd: uofd, argv[++i], 1);
+                if(strlen(argv[i +1]) == 1) {
+                  if(sc == 'i')
+                    uifd = argv[++i][0];
+                  else
+                    uofd = argv[++i][0];
+                }
               j++;
             }
             else {
@@ -235,7 +238,7 @@ int main(int argc, char  *argv[])
         }
     }
     else {
-      if(strlen(argv[i]) > A_MAX) {
+      if(strlen(argv[i]) > ARGV_MAX) {
         fprintf(stderr ,"cbase: string too long.\n");
         exit(1);
       }
@@ -247,19 +250,23 @@ int main(int argc, char  *argv[])
     fprintf(stderr ,"cbase: no input.\n");
     exit(1);
   }
+  if(strlen(c_base_from) == 0 || strlen(c_base_to) == 0) {
+    fprintf(stderr, "cbase: please specify base.\n");
+    exit(1);
+  }
   if(atoi(c_base_from) > BASE_MAX || atoi(c_base_to) > BASE_MAX) {
     fprintf(stderr ,"cbase: invalid base.\n");
   }
 
   /* start processing */
   for(i = 0; i < argcount; i++) {
-    output[0] = '\0';
+    g_total = 0;
+
     if(strcmp(c_base_from, c_base_to) == 0) {
       printf("%s (%s) = %s (%s)\n", optargs[i], c_base_from, 
           optargs[i], c_base_from);
       continue;
     }
-
     send = optargs[i];
 
     /* preprocess for input alphabet */
@@ -286,48 +293,23 @@ int main(int argc, char  *argv[])
     if(strcmp(c_base_to, "a") == 0) {
       to_alpha = true;
       strcpy(c_base_to, "10");
-      //if(!outter_string_group && !outter_string_cut) {
-      //  fprintf(stderr, "cbase: please use `-do' or `-go' to group.\n");
-      //  exit(1);
-      //}
     }
 
     if(outter_string_cut) {                     /* # CUT */
+      /* We don't use `strtok' here because it has bug, if strtok find a token
+       * which is not in the delim, it will stop parsing the string */
+
       int pos = -1;                             /* positon will scanning */
       for(j = 0; j < strlen(send); j++) {
-        char scan[A_MAX], tmp[2];
+        char* scan = (char*) malloc((from_alpha? ARGV_MAX *3: ARGV_MAX) *sizeof(char));
         if(send[j] == ofd || j +1 == strlen(send)) {
           strcpy(scan, send);
           if(j +1 == strlen(send)) j++;
           scan[j] = '\0';
-          trans(scan +pos +1, buf, atoi(c_base_from), atoi(c_base_to), ifd, ign, uifd);
-          if(to_alpha && atoi(buf) > 255) {
-            fprintf(stderr ,"cbase: not an alphabet `%d'\n", atoi(buf));
-            exit(1);
-          }
-          if(strlen(output) +strlen(buf) +1> A_MAX *8) {
-            fprintf(stderr ,"cbase: string too long.\n");
-            exit(1);
-          }
-          if(to_alpha) {
-            tmp[0] = atoi(buf);
-            tmp[1] = '\0';
-            strcat(output, tmp);
-          }
-          else
-            strcat(output, buf);
-
-          if(j != strlen(send) && !outter_suppress) { /* put delimiter */
-            if(outter_use_field)
-              strcat(output, uofd);
-            else {
-              tmp[0] = ofd;
-              tmp[1] = '\0';
-              strcat(output, tmp);
-            }
-          }
+          trans(scan +pos +1, atoi(c_base_from), atoi(c_base_to), ifd, ign, uifd);
           pos = j;
         }
+        free(scan);
       }
     }
     else if(outter_string_group) {              /* # GROUP */
@@ -335,50 +317,50 @@ int main(int argc, char  *argv[])
         fprintf(stderr ,"cbase: group count not match.\n");
         exit(1);
       }
-      char scan[A_MAX];
+      char scan[ARGV_MAX];
       if(ogn == 0)
         ogn = strlen(send);
       for(j = 0; j < strlen(send); j += ogn) {
-        char tmp[2];
         strcpy(scan, send);
         scan[j +ogn] = '\0';
-        trans(scan +j, buf, atoi(c_base_from), atoi(c_base_to), ifd, ign, uifd);
-        if(to_alpha && atoi(buf) > 255) {
-          fprintf(stderr ,"cbase: not an alphabet `%d'\n", atoi(buf));
-          exit(1);
-        }
-        if(strlen(output) +strlen(buf) +1> A_MAX *8) {
-          fprintf(stderr ,"cbase: string too long.\n");
-          exit(1);
-        }
-        if(to_alpha) {
-          tmp[0] = atoi(buf);
-          tmp[1] = '\0';
-          strcat(output, tmp);
-        }
-        else
-          strcat(output, buf);
-        if(outter_use_field && j != strlen(send) -ogn && !outter_suppress) /* put delimiter */
-          strcat(output, uofd);
+        trans(scan +j, atoi(c_base_from), atoi(c_base_to), ifd, ign, uifd);
       }
     }
-    else {                                      /* # OTHERS */
-      trans(optargs[i], buf, atoi(c_base_from), atoi(c_base_to), ifd, ign, uifd);
-      if(strlen(output) +strlen(buf) > A_MAX *8) {
-        fprintf(stderr ,"cbase: string too long.\n");
-        exit(1);
-      }
+    else                                        /* # OTHERS */
+      trans(optargs[i], atoi(c_base_from), atoi(c_base_to), ifd, ign, uifd);
+
+    /* get max length */
+    for(j = 0; j < g_total; j++)
+      if(strlen(terms[j]) > max_length)
+        max_length = strlen(terms[j]);
+    printf("%s (%s) = ", optargs[i], from_alpha? "a": c_base_from);
+
+    /* start printing */
+    for(j = 0; j < g_total; j++) {
       if(to_alpha) {
-        char tmp[2];
-        tmp[0] = atoi(buf);
-        tmp[1] = '\0';
-        strcat(output, tmp);
+        if(atoi(terms[j]) < 0 || atoi(terms[j]) > 256) {
+          printf("\ncbase: not an alphabet - %s.\n", terms[j]);
+          exit(1);
+        }
+        printf("%c", atoi(terms[j]) %256);
       }
-      else
-        strcat(output, buf);
+      else {
+        if(strlen(terms[j]) < max_length) {
+          int k;
+          for(k = 0; k < max_length -strlen(terms[j]); k++)
+            printf("0");
+        }
+        printf("%s", terms[j]);
+      }
+      if(!outter_suppress && j != g_total -1) {
+        if(outter_use_field)
+          printf("%c", uofd);
+        else if(outter_string_cut)
+          printf("%c", ofd);
+      }
     }
-    printf("%s (%s) = %s (%s)\n", optargs[i], from_alpha? "a": c_base_from, output,
-        to_alpha? "a": c_base_to);
+    printf(" (%s)\n", to_alpha? "a": c_base_to);
+    freeterms();
   }
   if(to_alpha && inner_use_field)
     fprintf(stderr ,"cbase: delimitor suppressed when printing alphabet.\n");
@@ -387,29 +369,32 @@ int main(int argc, char  *argv[])
   return 0;
 }
 
-char* trans(char* target, char* buf, int base_from, int base_to, char fd, int ign, char* uifd)
+int trans(char* target, int base_from, int base_to, char fd, int ign, char cuifd)
 {
   int total = 0,                                /* total delimiter*/
       count = 0,                                /* string position */
       curr = 0,            /* for current position when counting words*/
       max_digits = 0;
   int i, c, pos = -1;
+  char buf[ARGV_MAX];
   unsigned long long int sum = 0, tmp = 0, times = 0;
+  char uifd[2];
   char *tr;                                     /* for insert char when c > 36 */
   char t;
-  char *scan = malloc(from_alpha? A_MAX *3: A_MAX);
+  char *scan = malloc((from_alpha? ARGV_MAX *3: ARGV_MAX) *sizeof(char));
+  buf[0] = '\0';
+  uifd[0] = cuifd;
+  uifd[1] = '\0';
 
-  buf[0] = '\0';                                /* reset buffer */
 
   /* start convert to dec from base_from */
   if(inner_string_cut) {                        /* # CUT */
+    if(target[strlen(target) -1] == fd)         /* remove the last delimiter */
+      target[strlen(target) -1] = '\0';
+
     for(i = 0; i < strlen(target); i++)
       if(target[i] == fd) total++;
 
-    if(target[strlen(target) -1] == fd) {       /* remove the last delimiter */
-      target[strlen(target) -1] = '\0';
-      total--;
-    }
     for(i = 0; i < strlen(target); i++) {
       strcpy(scan, target);
       if(target[i] == fd || (i +1 == strlen(target))) { /* or it's the last one */
@@ -470,14 +455,14 @@ char* trans(char* target, char* buf, int base_from, int base_to, char fd, int ig
   /* get max digits */
   while(tmp) {
     c = tmp % base_to;
-    if(strlen(itoa(c)) > max_digits)
-      max_digits = strlen(itoa(c));
+    if(strlen(i2a(c)) > max_digits)
+      max_digits = strlen(i2a(c));
     tmp /= base_to;
   }
 
   tmp = sum;
   while(tmp) {
-    if(count > (to_alpha? A_MAX*3: A_MAX)) {
+    if(count +1 > ARGV_MAX) {
       fprintf(stderr ,"cbase: output string too long.\n");
       exit(1);
     }
@@ -492,20 +477,19 @@ char* trans(char* target, char* buf, int base_from, int base_to, char fd, int ig
       buf[count] = '\0';
     }
     else if (base_to > 36) {                      /* # for digits > 36 */
-      tr = itoa(c);
+      tr = i2a(c);
       if(!inner_suppress && !to_alpha) {
         strcat(buf, uifd);
         count++;
       }
       /* we must put it in reverse order because we reverse the whole
        * string at the end */
-      for(i = 0; i < strlen(tr); i++) {
-        if(count +i > (to_alpha? A_MAX *3: A_MAX)) {
-          printf("\ncbase: output string too long.\n");
-          exit(1);
-        }
-        buf[count +i] = tr[strlen(tr) -i -1];
+      if(count +strlen(tr) +1 > ARGV_MAX) {
+        printf("\ncbase: output string too long.\n");
+        exit(1);
       }
+      for(i = 0; i < strlen(tr); i++)
+        buf[count +i] = tr[strlen(tr) -i -1];
       count += strlen(tr);
       buf[count] = '\0';
       if(strlen(tr) < max_digits)
@@ -535,10 +519,19 @@ char* trans(char* target, char* buf, int base_from, int base_to, char fd, int ig
     buf[strlen(buf) -1] = '\0';
 
   free(scan);
-  return buf;
+  terms[g_total] = (char *) malloc((strlen(buf) +1) *sizeof(char));
+  strcpy(terms[g_total++], buf);
+  return 0;
 }
 
-char* itoa(int num)                             /*  This is neat! */
+void freeterms(void)
+{
+  int i;
+  for(i = 0; i < g_total; i++)
+    free(terms[i]);
+}
+
+char* i2a(int num)                             /*  This is neat! */
 {
   int i;
   static char cha[64];
@@ -624,7 +617,7 @@ void usage(void)
   printf("                  the delimiter in the output string. For example:\n\n");
   printf("                    cbase -i 10 -o 256 -si 2826960897\n\n");
   printf("                  Will output:\n\n");
-  printf("                    2826960897 (10) = 16812801 (256)\n\n");
+  printf("                    2826960897 (10) = 168128000001 (256)\n\n");
   printf("                  To decode unicode strings, the `-so' option must be used. For\n");
   printf("                  Example:\n\n");
   printf("                  cbase -i 16 -o a -do '%%' -so [unicode_string]\n\n");
