@@ -381,7 +381,7 @@ int trans(char* target, int base_from, int base_to, char fd, int ign, char cuifd
   char uifd[2];
   char *tr;                                     /* for insert char when c > 36 */
   char t;
-  char *scan = malloc((from_alpha? ARGV_MAX *3: ARGV_MAX) *sizeof(char));
+  char *scan = (char*) malloc((from_alpha? ARGV_MAX *3: ARGV_MAX) *sizeof(char));
   buf[0] = '\0';
   uifd[0] = cuifd;
   uifd[1] = '\0';
