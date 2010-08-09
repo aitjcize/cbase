@@ -207,7 +207,7 @@ void outter_convert(char* input, int i_base, int o_base,
     ++outter_count;
     plist = (char**) malloc(outter_count * sizeof(char*));
     plist[i = 0] = strtok(input, outter_delimiter);
-    while (ptr = strtok(NULL, outter_delimiter)) 
+    while ((ptr = strtok(NULL, outter_delimiter)))
       plist[++i] = ptr;
   } else {
     outter_count = strlen(input) / outter_group_num;
@@ -253,7 +253,7 @@ void inner_convert(char* input, int i_base, int o_base,
     ++inner_count;
     plist = (char**) malloc(inner_count * sizeof(char*));
     plist[i = 0] = strtok(arg, inner_delimiter);
-    while (ptr = strtok(NULL, inner_delimiter)) 
+    while ((ptr = strtok(NULL, inner_delimiter)))
       plist[++i] = ptr;
   } else {
     inner_count = strlen(arg) / inner_group_num;
@@ -267,7 +267,7 @@ void inner_convert(char* input, int i_base, int o_base,
   /* convert to 10-base */
   int source = 0;
   unsigned long long int total = 0, tmp = 0;
-  char* carg;
+  char* carg = 0;
   if (inner_mode == GROUP)
     carg = (char*) malloc(inner_group_num + 1);
 
@@ -293,7 +293,6 @@ void inner_convert(char* input, int i_base, int o_base,
   tmp = total;
   long int digits = 0;
   int r = 0, max_digits = 0;
-  char* ans = 0;
 
   if (o_base <= 36)
     max_digits = 1;
