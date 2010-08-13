@@ -1,6 +1,6 @@
 CFLAGS = -Wall -O2
 LIBS = -lm
-DBFLAGS = -g
+DBFLAGS = -g -Wall
 TARGET = cbase
 
 cbase: cbase.c
@@ -8,7 +8,7 @@ cbase: cbase.c
 	strip $(TARGET)
 
 debug: cbase.c
-	$(CC) cbase.c -o $(TARGET) $(CFLAGS) $(LIBS) $(DBFLAGS)
+	$(CC) cbase.c -o $(TARGET) $(LIBS) $(DBFLAGS)
 
 install:
 	cp cbase ~/bin

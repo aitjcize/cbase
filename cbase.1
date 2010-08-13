@@ -1,0 +1,92 @@
+.TH CBASE 1 "MAY 2010" Linux "User Manuals"
+.SH NAME
+cbase - A simple program for base convertion between numbers.
+.SH SYNOPSIS
+.B cbase [
+.I -i input_base
+.B ] [
+.B
+.I -o output_base
+.B ]
+.B [
+.I OPTIONS
+.B ] NUM1 NUM2 ...
+.SH DESCRIPTION
+cbase is a simple program designed to convert numbers between arbitraraily bases.
+.br
+There are two groups of option, one with lower case and another one with upper case. The upper case options is used between terms while the lower case is used between places. (since you can use arbitraraily base, a places can have more then one digits.)
+.SH OPTIONS
+.IP "-i, --input-base INPUT_BASE"
+Inbase, the base of the given string. Base can range from 2 to 256, use 'a' to specify that the input string is ASCII characters.
+.IP "-o, --output-base OUTPUT_BASE"
+Outbase, like inbase, but specify the base of output string, use 'a' to output ASCII characters.
+.IP "-a, --alphabet"
+use alphabet for base between 17 and 36
+.IP "-d, --place-delimiter DELIM"
+Tell cbase that the terms delimited by DELIM is treated as a single place. This is often used when the base is larger than 36. See the Example section for more information.
+.IP "-D, --term-delimiter DELIM"
+Tell cbase that the terms delimited by DELIM should be processed rescpectively.
+.IP "-g, --group-place-by COUNT"
+The `-g' option is like the `-d' option, but instead of using a delimiter, COUNT is used to group each terms. If neither `-d' nor `-g' is specified, `-g 1' is assumed (Like ten-based numbers). See the Example section for more information.
+.IP "-G, --group-term-by COUNT"
+The `-G' option is like the `-D' option, but instead of using a delimiter, COUNT is used to group each terms. See the Example section for more information.
+.IP "-f, --delimit-place-with DELIM"
+Delimit each place in the output string, this is especially useful when the `-g' option is used. See the Example section for more information.
+By default, if the `-d' option is used, the output string will be delimited with the same delimiter as the input. You can also use this option to change the output delimiter.
+.IP "-F, --delimit-term-with DELIM"
+Delimit each term in the output string, this is especially useful when the `-G' option is used. See the Example section for more information.
+By default, if the `-D' option is used, the output string will be delimited with the same delimiter as the input. You can also use this option to change the output delimiter.
+.IP "-s, --suppress-place-delimiter DELIM"
+Suppress place delimiter.
+.IP "-S, --supress-term-delimiter DELIM"
+Suppress term delimiter.
+.IP "-v, --version"
+show version information.
+.IP "-h, --help"
+show this help message and exit
+.SH EXAMPLE
+Input:  cbase -i 10 -o 16 -D : 97:98:99
+.br
+Output: 61:62:63
+.sp
+Input:  cbase -i 256 -o 10 -d 168.128.0.1
+.br
+Output: 2826960897
+.sp
+Input:  cbase -i 10 -o 16 -go 2 979899
+.br
+Output: 616263
+.sp
+Input:  cbase -i 256 -o 10 -g 3 168128000001
+.br
+Output: 2826960897
+.sp
+Input:  cbase -i a -o 10 -F : NTUEE
+.br
+Output: 78:84:85:69:69
+.sp
+Input:  cbase -i a -o 10 -F \| -f . NTUEE
+.br
+Output: 7.8|8.4|8.5|6.9|6.9
+.sp
+Input:  cbase -i 10 -o 256 -s 2826960897
+.br
+Output: 168128000001
+.sp
+Input:  cbase -i a -o 16 -F % 'UTF-8 Encode!'
+.br
+Output  55%54%46%2d%38%20%45%6e%63%6f%64%65%21
+.sp
+.nf
+Input:  cbase -i 16 -o a -D % -S %55%54%46%2d%38%20%44%65%63%6f%64%65%21
+.br
+Output: UTF-8 Decode!
+.fi
+.SH BUGS
+Feel free to report the bug at:
+.sp
+http://github.com/Aitjcize/gettube/issues or
+.sp
+mail://aitjcize@gmail.com.
+.SH AUTHOR
+Wei-Ning Huang (AZ) <aitjcize@gmail.com>
