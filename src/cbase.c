@@ -33,7 +33,7 @@
 #define L_FATAL   0x04
 
 const char* program_name = "cbase";
-const char* program_version = "0.3";
+const char* program_version = "0.3.1";
 
 static struct option longopts[] = {
   { "input-base",                required_argument, NULL, 'i' },
@@ -312,7 +312,7 @@ void place_convert(char* input, int i_base, int o_base,
   long int digits = 0;
   int r = 0, max_digits = 0;
 
-  if (o_base <= 36 && use_alphabet)
+  if (o_base <= 16 || (use_alphabet && o_base <= 36 ))
     max_digits = 1;
   else
     max_digits = strlen(cbase_itoa(o_base -1));
