@@ -423,7 +423,7 @@ void help(void) {
   printf("Argumets & options:\n"
 "   -i [inbase]  Inbase, the base of the given string. Base can range from 2 to\n"
 "                256, use 'a' to specify that the input string is alphabet.\n"
-"   -o [inbase]  Outbase, like inbase, but specify that the base of output string,\n"
+"   -o [inbase]  Outbase, like inbase, but specify the base of output string,\n"
 "                use 'a' to specify the output string is alphabet.\n"
 "   -d,-D DELIM  use DELM as delimiter to identify each terms in the string.\n"
 "                if DELM is not specified, '.' is used by default.\n\n"
