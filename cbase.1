@@ -13,8 +13,10 @@ cbase - A simple program for base convertion between numbers
 .B ] NUM1 NUM2 ...
 .SH DESCRIPTION
 cbase is a simple program designed to convert numbers between arbitraraily bases.
-.br
+.sp
 There are two groups of options, one with lower case and another one with upper case. The upper case options is used between terms while the lower case is used between places. (since you can use arbitraraily base, a places can have more then one digits.)
+.sp
+Note: If no argument specified, cbase will read from stdin.
 .SH OPTIONS
 .IP "-i, --input-base INPUT_BASE"
 Inbase, the base of the given string. Base can range from 2 to 256, use 'a' to specify that the input string is ASCII characters.

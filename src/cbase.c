@@ -80,6 +80,7 @@ void help(void);
 
 int main(int argc, char *argv[])
 {
+  char databuf[BUFSIZ + 1];
   char opt = 0;
   int i = 0;
   int input_base = 0;
@@ -193,11 +194,22 @@ int main(int argc, char *argv[])
   else
     place_mode = GROUP;
 
-  for (i = optind; i < argc; ++i) {
-    term_convert(argv[i], input_base, output_base,
-                   place_delimiter, term_delimiter,
-                   place_group_num, term_group_num,
-                   place_forced_delimiter, term_forced_delimiter);
+  if (optind < argc) { /* read from command line arguments */
+    for (i = optind; i < argc; ++i) {
+      term_convert(argv[i], input_base, output_base,
+                     place_delimiter, term_delimiter,
+                     place_group_num, term_group_num,
+                     place_forced_delimiter, term_forced_delimiter);
+    }
+  } else { /* read from stdin */
+    while (fgets(databuf, BUFSIZ, stdin)) {
+      if (databuf[strlen(databuf) -1] == '\n')
+        databuf[strlen(databuf) -1] = 0;
+      term_convert(databuf, input_base, output_base,
+                     place_delimiter, term_delimiter,
+                     place_group_num, term_group_num,
+                     place_forced_delimiter, term_forced_delimiter);
+    }
   }
 
   return 0;
