@@ -36,9 +36,6 @@
 #define L_MSG     0x02
 #define L_FATAL   0x04
 
-const char* program_name = "cbase";
-const char* program_version = "0.3.1";
-
 static struct option longopts[] = {
   { "input-base",                required_argument, NULL, 'i' },
   { "output-base",               required_argument, NULL, 'o' },
@@ -444,7 +441,7 @@ void slog(int level, const char *fmt, ...) {
     vfprintf(stdout, fmt, vap);
     va_end(vap);
   } else {
-    fprintf(stderr, "%s: ", program_name);
+    fprintf(stderr, "%s: ", PACKAGE);
     va_start(vap, fmt);
     vfprintf(stderr, fmt, vap);
     va_end(vap);
@@ -455,7 +452,7 @@ void slog(int level, const char *fmt, ...) {
 }
 
 void version(void) {
-  fprintf(stderr ,"%s Ver. %s\n", program_name, program_version);
+  fprintf(stderr ,"%s\n", PACKAGE_STRING);
   printf("Copyright (C) 2010 Aitjcize (Wei-Ning Huang)\n"
 "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n"
 "This is free software: you are free to change and redistribute it.\n"
@@ -465,7 +462,7 @@ void version(void) {
 
 void help(void) {
   printf("Usage: %s [ -i input_base ] [ -o output_base ] [ OPTIONS ] NUM1 NUM2"
-         " ...\n\n", program_name);
+         " ...\n\n", PACKAGE);
   printf("Options:\n"
 "  -i, --input-base INPUT_BASE\n"
 "                        base of input number\n"
@@ -491,5 +488,5 @@ void help(void) {
 "  -v, --version         show version information\n"
 "  -h, --help            show this help message and exit\n\n"
 "Please see manual page for details and examples.\n"
-);
+  );
 }
