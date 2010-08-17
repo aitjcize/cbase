@@ -27,7 +27,7 @@ fi
 cd $program_name-$ver
 dh_make -s -b -p $program_name
 
-cp ../rules ../control ../manpages debian
+cp ../rules ../control debian
 cd debian
 rm *.ex *.EX README.*
 dch -e
