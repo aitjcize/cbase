@@ -1,0 +1,35 @@
+2010-08-14  AZ Huang <aitjcize@gmail.com>
+
+  * cbase.1, src/cbase.c: Fix alphabet representation
+
+2010-08-13  AZ Huang <aitjcize@gmail.com>
+
+  * cbase.1, src/cbase.c: enable reading from stdin
+
+  * cbase.1: correct manpage
+
+  * dev/build-pkg.sh: Add sdist, clean to build script
+
+  * Makefile, dev/build-pkg.sh, dev/chver.sh, dev/control, dev/manpages,
+  dev/rules, src/Makefile: Modify build scripts
+
+  * src/cbase.c: Increase version number to 0.3
+
+  * README, cbase.1, src/Makefile, src/cbase.c: Add manual pages. Fixed some
+  bugs.
+
+  * src/cbase.c: Fix help
+
+2010-08-09  AZ Huang <aitjcize@gmail.com>
+
+  * src/cbase.c: Fix warnings
+
+  * AUTHORS, COPYING, cbase.c, src/Makefile, src/cbase.c: Rewrite cbase!
+
+2009-10-28  Aitjcize (Wei-Ning Huang) <aitjcize@gmail.com>
+
+  * cbase.c: fix malloc (char*)
+
+  * cbase.c: Ver 0.1.5 Stable
+
+  * cbase.c: Ver 0.1.2
