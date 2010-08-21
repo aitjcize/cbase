@@ -1,3 +1,3 @@
 #!/bin/bash
 
-sed -i "s/program_version = \".*\"/program_version = \"$1\"/" ../src/cbase.c
+sed -i "s/AC_INIT(\[cbase\], \[.*\], \[aitjcize@gmail.com\])/AC_INIT([cbase], [$1], [aitjcize@gmail.com])/g" ../configure.ac

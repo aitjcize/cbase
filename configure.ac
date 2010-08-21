@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.65])
-AC_INIT([cbase], [0.3.1], [aitjcize@gmail.com])
+AC_INIT([cbase], [0.3.2], [aitjcize@gmail.com])
 
 AM_INIT_AUTOMAKE
 
