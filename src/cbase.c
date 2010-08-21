@@ -154,6 +154,9 @@ int main(int argc, char *argv[])
   if (!output_base)
     slog(L_FATAL, "no output base specified\n");
 
+  if (1 == output_base)
+    slog(L_FATAL, "invalid output base\n");
+
   if (output_base > 16 && !use_alphabet && !place_forced_delimiter)
     place_forced_delimiter = ".";
 
@@ -375,7 +378,7 @@ int count_terms(const char* input, const char* delim) {
     if (0 == strncmp(i, delim, delim_len)) {
       if (!prev_is_delim) ++count;
       prev_is_delim = true;
-      i += delim_len;
+      i += delim_len - 1;
     } else
       prev_is_delim = false;
   }
@@ -388,7 +391,7 @@ int cbase_atoi(const char* str) {
   int num = atoi(str);
 
   if (from_ascii)
-    return str[0];
+    return (unsigned char)str[0];
 
   char ck = str[0];
   
@@ -413,10 +416,7 @@ int cbase_atoi(const char* str) {
 char* cbase_itoa(int num) {
   int i;
   static char cha[64] = "0";
-  if (num == 0) {
-    strcpy(cha, "0");
-    return cha;
-  }
+  if (num == 0) return cha;
 
   int tmp = num;
   int digits = 0;
